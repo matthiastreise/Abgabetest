@@ -27,7 +27,7 @@ pipeline {
             // GNU C++ wird für Python benoetigt wird, aber die Bibliotheken
             // insbesondere fuer GNU C++ sind in Alpine anders strukturiert als
             // in Debian und Ubuntu.
-            image 'node:14.13.1-buster'
+            image 'node:14.13.0-buster'
             // https://stackoverflow.com/questions/62330354/jenkins-pipeline-alpine-agent-apk-update-error-unable-to-lock-database-permis
             // https://stackoverflow.com/questions/42630894/jenkins-docker-how-to-control-docker-user-when-using-image-inside-command/51986870#51986870
             // https://stackoverflow.com/questions/42743201/npm-install-fails-in-jenkins-pipeline-in-docker
@@ -66,7 +66,7 @@ pipeline {
 
                 // https://www.jenkins.io/doc/pipeline/steps/git
                 // "named arguments" statt Funktionsaufruf mit Klammern
-                git url: 'file:///git-repository/abgabe1', branch: 'master', poll: true
+                git url: 'https://github.com/matthiastreise/Abgabetest', branch: 'master', poll: true
             }
         }
 

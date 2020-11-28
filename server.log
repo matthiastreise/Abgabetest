@@ -1,0 +1,30 @@
+{"message":"Logging durch Winston ist konfiguriert","level":"info","timestamp":"2020-11-28T07:50:41.963Z"}
+{"message":"consoleOptions: {level:'info',format:{options:{}}}","level":"debug","timestamp":"2020-11-28T07:50:41.963Z"}
+{"message":"fileOptions: {filename:'server.log',level:'debug',maxsize:250000,maxFiles:3,format:{options:{}}}","level":"debug","timestamp":"2020-11-28T07:50:41.964Z"}
+{"message":"RoleService: roles=['admin','mitarbeiter','kunde']","level":"info","timestamp":"2020-11-28T07:50:45.129Z"}
+{"message":"UsersService: users=[{id:'20000000-0000-0000-0000-000000000001',username:'admin',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'admin@acme.com',roles:['admin','mitarbeiter','kunde']},{id:'20000000-0000-0000-0000-000000000002',username:'Alex',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'alex@acme.com',roles:['admin','mitarbeiter']},{id:'20000000-0000-0000-0000-000000000003',username:'Matthias',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'matthias@acme.com',roles:['mitarbeiter','kunde']},{id:'20000000-0000-0000-0000-000000000004',username:'Glynis',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'glynis@acme.com',roles:['kunde']},{id:'20000000-0000-0000-0000-000000000006',username:'Marie',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'marie@acme.com'}]","level":"info","timestamp":"2020-11-28T07:50:45.130Z"}
+{"message":"RoleService: roles=['admin','mitarbeiter','kunde']","level":"info","timestamp":"2020-11-28T07:50:45.138Z"}
+{"message":"UsersService: users=[{id:'20000000-0000-0000-0000-000000000001',username:'admin',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'admin@acme.com',roles:['admin','mitarbeiter','kunde']},{id:'20000000-0000-0000-0000-000000000002',username:'Alex',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'alex@acme.com',roles:['admin','mitarbeiter']},{id:'20000000-0000-0000-0000-000000000003',username:'Matthias',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'matthias@acme.com',roles:['mitarbeiter','kunde']},{id:'20000000-0000-0000-0000-000000000004',username:'Glynis',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'glynis@acme.com',roles:['kunde']},{id:'20000000-0000-0000-0000-000000000006',username:'Marie',password:'$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS',email:'marie@acme.com'}]","level":"info","timestamp":"2020-11-28T07:50:45.139Z"}
+{"message":"populateDB(): devMode=true","level":"info","timestamp":"2020-11-28T07:50:49.120Z"}
+{"message":"mongodb.connectMongoDB(): url=mongodb+srv://admin:p@cluster0.3mblg.mongodb.net/acme?retryWrites=true&w=majority","level":"debug","timestamp":"2020-11-28T07:50:49.120Z"}
+{"message":"mongodb.connectMongoDB(): DB-Client geoeffnet","level":"debug","timestamp":"2020-11-28T07:50:49.455Z"}
+{"message":"Die Collection \"Song\" wird geloescht...","level":"warn","timestamp":"2020-11-28T07:50:49.457Z"}
+{"message":"Die Collection \"Song\" wurde geloescht.","level":"warn","timestamp":"2020-11-28T07:50:49.480Z"}
+{"message":"Die Collection \"Song\" wird neu angelegt...","level":"warn","timestamp":"2020-11-28T07:50:49.480Z"}
+{"message":"Die Collection \"Song\" wurde neu angelegt.","level":"warn","timestamp":"2020-11-28T07:50:49.518Z"}
+{"message":"5 Datensaetze wurden eingefuegt.","level":"warn","timestamp":"2020-11-28T07:50:49.540Z"}
+{"message":"Indexe fuer \"Song\" werden neu angelegt...","level":"warn","timestamp":"2020-11-28T07:50:49.540Z"}
+{"message":"Der Index titel_1 wurde angelegt.","level":"warn","timestamp":"2020-11-28T07:50:49.587Z"}
+{"message":"Der Index labels_1 wurde angelegt.","level":"warn","timestamp":"2020-11-28T07:50:49.625Z"}
+{"message":"uploadBinary(): \"00000000-0000-0000-0000-000000000001\" wird eingelesen.","level":"warn","timestamp":"2020-11-28T07:50:49.626Z"}
+{"message":"URL fuer mongoose: mongodb+srv://USERNAME:***@cluster0.3mblg.mongodb.net/acme?retryWrites=true&w=majority","level":"info","timestamp":"2020-11-28T07:50:49.629Z"}
+{"message":"gridfs.saveReadable(): UploadStream ist beendet","level":"debug","timestamp":"2020-11-28T07:50:49.842Z"}
+{"message":"mongodb.closeDbClient(): DB-Client wurde geschlossen","level":"debug","timestamp":"2020-11-28T07:50:49.844Z"}
+{"message":"DB-Verbindung zu acme ist aufgebaut","level":"info","timestamp":"2020-11-28T07:50:49.863Z"}
+{"message":"\n\nALEXANDER MADER - MATTHIAS TREISE - GLYNIS ZOLK\n\n    ","level":"info","timestamp":"2020-11-28T07:50:49.867Z"}
+{"message":"Node:           v14.13.0","level":"info","timestamp":"2020-11-28T07:50:49.867Z"}
+{"message":"Betriebssystem: Windows_NT 10.0.19041","level":"info","timestamp":"2020-11-28T07:50:49.867Z"}
+{"message":"Rechnername:    DESKTOP-EUGSEUP","level":"info","timestamp":"2020-11-28T07:50:49.867Z"}
+{"message":"IP-Adresse:     192.168.0.207","level":"info","timestamp":"2020-11-28T07:50:49.871Z"}
+{"message":"","level":"info","timestamp":"2020-11-28T07:50:49.871Z"}
+{"message":"https://DESKTOP-EUGSEUP:3000 ist gestartet: Herunterfahren durch <Strg>C","level":"info","timestamp":"2020-11-28T07:50:49.872Z"}

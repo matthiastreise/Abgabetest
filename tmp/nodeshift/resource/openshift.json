@@ -1,0 +1,150 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "apps.openshift.io/v1",
+      "kind": "DeploymentConfig",
+      "metadata": {
+        "name": "beispiel",
+        "namespace": "jz",
+        "labels": {
+          "project": "beispiel",
+          "version": "1.0.0",
+          "provider": "nodeshift",
+          "app": "beispiel",
+          "app.kubernetes.io/name": "nodejs",
+          "app.kubernetes.io/component": "beispiel",
+          "app.kubernetes.io/instance": "beispiel",
+          "app.openshift.io/runtime": "nodejs"
+        },
+        "annotations": {
+          "nodeshift/git-branch": "master",
+          "nodeshift/git-commit": "92a79ee0b8cf3b4ff623e5014bc9d9bb870b7054"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "revisionHistoryLimit": 2,
+        "selector": {
+          "app": "beispiel",
+          "project": "beispiel",
+          "provider": "nodeshift"
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          },
+          {
+            "type": "ImageChange",
+            "imageChangeParams": {
+              "automatic": true,
+              "containerNames": [
+                "beispiel"
+              ],
+              "from": {
+                "kind": "ImageStreamTag",
+                "namespace": "jz",
+                "name": "beispiel:latest"
+              }
+            }
+          }
+        ],
+        "template": {
+          "metadata": {
+            "labels": {
+              "project": "beispiel",
+              "version": "1.0.0",
+              "provider": "nodeshift",
+              "app": "beispiel"
+            },
+            "annotations": {
+              "nodeshift/git-branch": "master",
+              "nodeshift/git-commit": "92a79ee0b8cf3b4ff623e5014bc9d9bb870b7054"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "image": "beispiel",
+                "name": "beispiel",
+                "securityContext": {
+                  "privileged": false
+                },
+                "ports": [
+                  {
+                    "containerPort": 8443,
+                    "name": "http",
+                    "protocol": "TCP"
+                  }
+                ],
+                "env": []
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "spec": {
+        "selector": {
+          "project": "beispiel",
+          "provider": "nodeshift"
+        },
+        "ports": [
+          {
+            "protocol": "TCP",
+            "port": 8443,
+            "targetPort": 8443,
+            "name": "http"
+          }
+        ],
+        "type": "ClusterIP"
+      },
+      "metadata": {
+        "name": "beispiel",
+        "namespace": "jz",
+        "labels": {
+          "project": "beispiel",
+          "version": "1.0.0",
+          "provider": "nodeshift",
+          "app.kubernetes.io/name": "nodejs",
+          "app.kubernetes.io/component": "beispiel",
+          "app.kubernetes.io/instance": "beispiel",
+          "app.openshift.io/runtime": "nodejs"
+        },
+        "annotations": {
+          "nodeshift/git-branch": "master",
+          "nodeshift/git-commit": "92a79ee0b8cf3b4ff623e5014bc9d9bb870b7054"
+        }
+      }
+    },
+    {
+      "apiVersion": "route.openshift.io/v1",
+      "kind": "Route",
+      "spec": {
+        "to": {
+          "kind": "Service",
+          "name": "beispiel"
+        },
+        "port": {
+          "targetPort": 8443
+        }
+      },
+      "metadata": {
+        "name": "beispiel",
+        "labels": {
+          "project": "beispiel",
+          "version": "1.0.0",
+          "provider": "nodeshift",
+          "app.kubernetes.io/name": "nodejs",
+          "app.kubernetes.io/component": "beispiel",
+          "app.kubernetes.io/instance": "beispiel",
+          "app.openshift.io/runtime": "nodejs"
+        }
+      }
+    }
+  ]
+}
