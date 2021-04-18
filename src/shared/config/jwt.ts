@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,12 +12,17 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import type { SignOptions, VerifyOptions } from 'jsonwebtoken';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+
+/**
+ * Das Modul enthält die Konfiguration für JWT.
+ * @packageDocumentation
+ */
 
 export const secret = 'p';
 
@@ -41,9 +46,6 @@ const algorithm = 'RS256';
 // http://jwt.io kann nur HS256 und RS256
 // const algorithm = 'ES384';
 
-// RSASSA-PSS
-// const algorithm = 'PS256';
-
 export const isHMAC = () => algorithm.startsWith('HS');
 
 /* global __dirname */
@@ -60,6 +62,7 @@ if (algorithm.startsWith('HS')) {
     // default (z.B. RS256) PEM-Datei durch z.B. OpenSSL
     privateKey = readFileSync(resolve(jwtDir, 'rsa.pem'), utf8);
 }
+Object.freeze(privateKey);
 
 export let secretOrPublicKey: string;
 if (algorithm.startsWith('HS')) {
@@ -70,8 +73,9 @@ if (algorithm.startsWith('HS')) {
     // z.B. RS256
     secretOrPublicKey = readFileSync(resolve(jwtDir, 'rsa.public.pem'), utf8);
 }
+Object.freeze(secretOrPublicKey);
 
-const issuer = 'https://acme.com/shop/Alexander, Matthias,Glynis';
+const issuer = 'https://acme.com/shop/JuergenZimmermann';
 
 // sub(ject) und jti (= JWT Id) muessen individuell gesetzt werden
 export const signOptions: SignOptions = {
@@ -81,8 +85,10 @@ export const signOptions: SignOptions = {
     // ggf. als DN (= distinguished name) gemaess LDAP
     issuer,
 };
+Object.freeze(signOptions);
 
 export const verifyOptions: VerifyOptions = {
     algorithms: [algorithm],
     issuer,
 };
+Object.freeze(verifyOptions);

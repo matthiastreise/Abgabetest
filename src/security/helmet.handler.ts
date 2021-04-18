@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,7 +12,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Das Modul besteht aus Security-Funktionen für z.B. CSP, XSS, Click-Jacking,
+ * HSTS und MIME-Sniffing, die durch Helmet bereitgestellt werden.
+ * @packageDocumentation
  */
 
 // Alternative zu helmet: lusca von Kraken
@@ -25,6 +31,9 @@ import {
     xssFilter,
 } from 'helmet';
 
+/**
+ * Security-Funktionen für z.B. CSP, XSS, Click-Jacking, HSTS und MIME-Sniffing.
+ */
 // https://blog.appcanary.com/2017/http-security-headers.html
 export const helmetHandlers = [
     // CSP = Content Security Policy
@@ -67,6 +76,6 @@ export const helmetHandlers = [
     //   https://tools.ietf.org/html/rfc7034
     noSniff(),
 
-    // Im Header "X-Powered-By: Express" unterdruecken
+    // Im Header z.B. "X-Powered-By: Express" unterdruecken
     hidePoweredBy(),
 ];

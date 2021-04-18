@@ -1,7 +1,7 @@
 /* eslint-disable max-lines,max-lines-per-function,no-underscore-dangle */
 
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,11 +14,11 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import { HttpMethod, agent, createTestserver } from '../../testserver';
-import { HttpStatus, serverConfig } from '../../../src/shared';
+import { HttpStatus, nodeConfig } from '../../../src/shared';
 import { afterAll, beforeAll, describe, test } from '@jest/globals';
 import fetch, { Headers, Request } from 'node-fetch';
 import type { AddressInfo } from 'net';
@@ -56,13 +56,13 @@ let server: Server;
 let loginUri: string;
 
 // Test-Suite
-describe('REST-Schnittstelle /login', () => {
+describe('REST-Schnittstelle /api/login', () => {
     // Testserver starten und dabei mit der DB verbinden
     beforeAll(async () => {
         server = await createTestserver();
 
         const address = server.address() as AddressInfo;
-        const baseUri = `https://${serverConfig.host}:${address.port}`;
+        const baseUri = `https://${nodeConfig.host}:${address.port}`;
         loginUri = `${baseUri}${PATHS.login}`;
     });
 

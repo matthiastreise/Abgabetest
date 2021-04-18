@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,67 +12,60 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Collection, Db, MongoClient } from 'mongodb';
-import { dbConfig, serverConfig } from './../config';
+/**
+ * Das Modul enthält Funktionen, um die Test-DB neu zu laden.
+ * @packageDocumentation
+ */
+
+import type { Db, MongoClient } from 'mongodb';
+import { cloud, dbConfig } from './../config';
 import { GridFSBucket } from 'mongodb';
 import { connectMongoDB } from './mongoDB';
 import { createReadStream } from 'fs';
 import { logger } from '../logger';
 import { resolve } from 'path';
-import { saveReadable } from './gridfs';
-import { songs } from './songs';
+import { save } from './gridfs';
+import { testdaten } from './testdaten';
 
 const createCollection = async (db: Db) => {
     // http://mongodb.github.io/node-mongodb-native/3.5/api/Db.html#dropCollection
-    const collectionName = 'Song';
-    logger.warn(`Die Collection "${collectionName}" wird geloescht...`);
+    const collectionName = 'Film';
+    logger.warn('Die Collection "%s" wird geloescht...', collectionName);
     let dropped = false;
     try {
         dropped = await db.dropCollection(collectionName);
     } catch (err: any) {
         // Falls der Error *NICHT* durch eine fehlende Collection verursacht wurde
         if (err.name !== 'MongoError') {
-            logger.error(`Fehler beim Neuladen der DB ${db.databaseName}`);
+            logger.error('Fehler beim Neuladen der DB %s', db.databaseName);
             return;
         }
     }
     if (dropped) {
-        logger.warn(`Die Collection "${collectionName}" wurde geloescht.`);
+        logger.warn('Die Collection "%s" wurde geloescht.', collectionName);
     }
 
     // http://mongodb.github.io/node-mongodb-native/3.5/api/Db.html#createCollection
-    logger.warn(`Die Collection "${collectionName}" wird neu angelegt...`);
+    logger.warn('Die Collection "%s" wird neu angelegt...', collectionName);
     const collection = await db.createCollection(collectionName);
     logger.warn(
-        `Die Collection "${collection.collectionName}" wurde neu angelegt.`,
+        'Die Collection "%s" wurde neu angelegt.',
+        collection.collectionName,
     );
 
     // http://mongodb.github.io/node-mongodb-native/3.5/api/Collection.html#insertMany
-    const result = await collection.insertMany(songs);
-    logger.warn(`${result.insertedCount} Datensaetze wurden eingefuegt.`);
+    const result = await collection.insertMany(testdaten);
+    logger.warn('%d Datensaetze wurden eingefuegt.', result.insertedCount);
 
     return collection;
 };
 
-const createIndex = async (collection: Collection) => {
-    logger.warn(
-        `Indexe fuer "${collection.collectionName}" werden neu angelegt...`,
-    );
-
-    // http://mongodb.github.io/node-mongodb-native/3.5/api/Collection.html#createIndex
-    // Beachte: bei createIndexes() gelten die Optionen fuer alle Indexe
-    let index = await collection.createIndex('titel', { unique: true });
-    logger.warn(`Der Index ${index} wurde angelegt.`);
-    index = await collection.createIndex('labels', { sparse: true });
-    logger.warn(`Der Index ${index} wurde angelegt.`);
-};
-
 const uploadBinary = (db: Db, client: MongoClient) => {
-    // Kein File-Upload in die Cloud
-    if (serverConfig.cloud !== undefined) {
+    // Kein File-Upload in die Cloud und in Kubernetes
+    if (cloud !== undefined) {
         logger.info('uploadBinary(): Keine Binaerdateien mit der Cloud');
         return;
     }
@@ -81,26 +74,33 @@ const uploadBinary = (db: Db, client: MongoClient) => {
     const contentType = 'image/png';
 
     const filename = '00000000-0000-0000-0000-000000000001';
-    logger.warn(`uploadBinary(): "${filename}" wird eingelesen.`);
+    logger.warn('uploadBinary(): "%s" wird eingelesen.', filename);
 
     // https://mongodb.github.io/node-mongodb-native/3.5/tutorials/gridfs/streaming
     const bucket = new GridFSBucket(db);
     bucket.drop();
 
+    // bei "ESnext" statt "CommonJS": __dirname ist nicht vorhanden
+    // import { dirname } from 'path';
+    // import { fileURLToPath } from 'url';
+    // const filename = fileURLToPath(import.meta.url);
+    // const currentDir = dirname(filename);
+
     /* global __dirname */
     const readable = createReadStream(resolve(__dirname, filenameBinary));
     const metadata = { contentType };
-    saveReadable(readable, bucket, filename, { metadata }, client);
+    save(readable, bucket, filename, { metadata }, client);
+    logger.warn('uploadBinary(): "%s" wurde eingelesen.', filename);
 };
 
-export const populateDB = async (dev?: boolean) => {
-    let devMode = dev;
-    if (devMode === undefined) {
-        devMode = dbConfig.dbPopulate;
-    }
-    logger.info(`populateDB(): devMode=${devMode}`);
+/**
+ * Die Test-DB wird im Development-Modus neu geladen.
+ */
+export const populateDB = async () => {
+    const { dbPopulate, dbPopulateFiles } = dbConfig;
+    logger.info('populateDB(): %s', dbPopulate);
 
-    if (!devMode) {
+    if (!dbPopulate) {
         return;
     }
 
@@ -111,7 +111,7 @@ export const populateDB = async (dev?: boolean) => {
         return;
     }
 
-    await createIndex(collection);
-
-    uploadBinary(db, client);
+    if (dbPopulateFiles) {
+        uploadBinary(db, client);
+    }
 };

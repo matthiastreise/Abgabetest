@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,27 +12,30 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import JSON5 from 'json5';
+/**
+ * Das Modul enthält Funktionen, um eine Verbindung zu MongoDB aufzubauen und
+ * zu schließen.
+ * @packageDocumentation
+ */
+
 import { MongoClient } from 'mongodb';
 import type { MongoClientOptions } from 'mongodb';
 import { dbConfig } from '../config/db';
 import { logger } from '../../shared/logger';
 
+/**
+ * Funktion, um eine Verbindung zu MongoDB aufzubauen
+ */
 export const connectMongoDB = async () => {
-    const { atlas, dbName, url, tlsCertificateKeyFile } = dbConfig;
-    logger.debug(`mongodb.connectMongoDB(): url=${url}`);
+    const { dbName, url } = dbConfig;
+    logger.debug('mongodb.connectMongoDB(): url=%s', url);
     const options: MongoClientOptions = {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     };
-    if (!atlas) {
-        options.tls = true;
-        options.tlsCertificateKeyFile = tlsCertificateKeyFile;
-        options.tlsInsecure = true;
-    }
 
     const client = new MongoClient(url, options);
     await client.connect();
@@ -42,9 +45,14 @@ export const connectMongoDB = async () => {
     return { db, client };
 };
 
-// NICHT: async, weil die Funktion fuer Request-Events beim Hochladen und
-// fuer GridFS-Events beim Herunterladen verwendet wird
+/**
+ * Funktion, um eine Verbindung zu MongoDB zu schließen
+ * @param client ein `MongoClient`-Objekt mit einer geöffneten DB-Verbindung
+ */
 export const closeMongoDBClient = (client: MongoClient): void => {
+    // NICHT: async, weil die Funktion fuer Request-Events beim Hochladen und
+    // fuer GridFS-Events beim Herunterladen verwendet wird
+
     // IIFE (= Immediately Invoked Function Expression) wegen await
     // https://developer.mozilla.org/en-US/docs/Glossary/IIFE
     // https://github.com/typescript-eslint/typescript-eslint/issues/647
@@ -53,7 +61,7 @@ export const closeMongoDBClient = (client: MongoClient): void => {
         try {
             await client.close();
         } catch (err: unknown) {
-            logger.error(`mongodb.closeDbClient(): ${JSON5.stringify(err)}`);
+            logger.error('mongodb.closeDbClient(): %o', err);
             return;
         }
 

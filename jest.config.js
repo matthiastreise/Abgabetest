@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 - present Alexander, Matthias, Glynis 
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 // https://jestjs.io/docs/en/configuration
@@ -37,12 +37,12 @@ module.exports = {
         '<rootDir>/node_modules/',
         '<rootDir>/scripts/',
         '<rootDir>/temp/',
-        '<rootDir>/src/song/service/mock/',
-        '<rootDir>/src/song/graphql',
-        '<rootDir>/src/song/html',
+        '<rootDir>/src/film/service/mock/',
+        '<rootDir>/src/film/graphql',
+        '<rootDir>/src/film/html',
     ],
     coverageReporters: ['text-summary', 'html'],
     errorOnDeprecated: true,
-    testTimeout: 10000,
+    testTimeout: 10000, // eslint-disable-line unicorn/numeric-separators-style
     verbose: true,
 };

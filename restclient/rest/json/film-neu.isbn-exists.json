@@ -1,0 +1,19 @@
+{
+  "titel": "Test",
+  "rating": 1,
+  "art": "VHS",
+  "studio": "Pixar",
+  "preis": 99.9,
+  "rabatt": 0.1,
+  "lieferbar": true,
+  "datum": "2020-02-01",
+  "isan": "978-3897225831",
+  "regisseur": "TEST",
+  "genre": ["Abenteuer", "Action"],
+  "darsteller": [
+    {
+      "vorname": "Theo",
+      "nachname": "Test"
+    }
+  ]
+}

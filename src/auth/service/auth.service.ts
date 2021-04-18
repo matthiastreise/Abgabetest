@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,17 +12,16 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { AuthorizationInvalidError, TokenInvalidError } from './errors';
-// Alternativen zu bcrypt:
-//  scrypt: https://www.tarsnap.com/scrypt.html
-//  Argon2: https://github.com/p-h-c/phc-winner-argon2
-//  SHA-Algorithmen und PBKDF2 sind anfaelliger bei Angriffen mittels GPUs
-//  http://blog.rangle.io/how-to-store-user-passwords-and-overcome-security-threats-in-2017
-//  https://stormpath.com/blog/secure-password-hashing-in-node-with-argon2
-import { compareSync, genSaltSync, hashSync } from 'bcrypt';
+/**
+ * Das Modul besteht aus der Klasse {@linkcode AuthService} für die
+ * Authentifizierung.
+ * @packageDocumentation
+ */
+
+import { NoTokenError, UserInvalidError } from './errors';
 import {
     logger,
     privateKey,
@@ -32,49 +31,63 @@ import {
     verifyOptions,
 } from '../../shared';
 import { sign, verify } from 'jsonwebtoken';
-import JSON5 from 'json5';
-import type { Request } from 'express';
 import { RoleService } from './role.service';
 import type { SignOptions } from 'jsonwebtoken';
 import type { User } from './user.service';
 import { UserService } from './user.service';
+// Alternativen zu bcrypt:
+//  scrypt: https://www.tarsnap.com/scrypt.html
+//  Argon2: https://github.com/p-h-c/phc-winner-argon2
+//  SHA-Algorithmen und PBKDF2 sind anfaelliger bei Angriffen mittels GPUs
+//  http://blog.rangle.io/how-to-store-user-passwords-and-overcome-security-threats-in-2017
+//  https://stormpath.com/blog/secure-password-hashing-in-node-with-argon2
+import { compareSync } from 'bcrypt';
 // UUID v4: random
 // https://github.com/uuidjs/uuid
 import { v4 as uuid } from 'uuid';
 
 interface LoginResult {
     token: string;
-    expiresIn: string | number | undefined;
+    expiresIn: number | string | undefined;
     roles?: readonly string[];
 }
 
+/**
+ * Die Klasse `AuthService` implementiert die Funktionen für die
+ * Authentifizierung wie z.B. Einloggen und Validierung von JSON Web Tokens.
+ */
 export class AuthService {
     private readonly roleService = new RoleService();
 
     private readonly userService = new UserService();
 
-    login(body: any) {
+    /**
+     * Benutzername und Passwort werden übergeben, um sich einzuloggen.
+     *
+     * Falls das Einloggen erfolgreich ist, wird ein JSON-Objekt mit dem
+     * _JSON Web Token_, dem Zeitstempel für das Ablaufdatum (`expiresIn`)
+     * und den Rollen als JSON-Array zurückgeliefert.
+     *
+     * Falls das Einloggen nicht erfolgreich war, wird undefined zurückgeliefert.
+     *
+     * @param username Benutzername.
+     * @param password Passwort.
+     */
+    login(username: string | undefined, password: string | undefined) {
         // ein verschluesseltes Passwort fuer Testzwecke ausgeben
-        // this.hashPassword('p');
+        // mittels genSaltSync und hashSync aus bcrypt
+        // const salt = genSaltSync();
+        // const hash = hashSync('mypassword', salt);
+        // logger.warn('Verschluesseltes Password: %s', hash);
 
-        logger.silly(`body: ${JSON5.stringify(body)}`);
-        // req.body.username: any
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const {
-            username,
-            password,
-        }: {
-            username: string | undefined;
-            password: string | undefined;
-        } = body;
-        logger.silly(`username: ${username}`);
+        logger.silly('username: %s', username);
         if (username === undefined || password === undefined) {
             return;
         }
         const user = this.userService.findByUsername(username);
-        logger.debug(`user: ${JSON5.stringify(user)}`);
+        logger.debug('user: %o', user);
 
-        logger.silly(`password: ${password}`);
+        logger.silly('password: %s', password);
         if (!this.checkPassword(user, password)) {
             return;
         }
@@ -94,73 +107,89 @@ export class AuthService {
             expiresIn: options.expiresIn,
             roles: user?.roles,
         };
-        logger.debug(`AuthService.login(): result=${JSON5.stringify(result)}`);
+        logger.debug('AuthService.login(): result=%o', result);
         return result;
     }
 
-    // Error gemaess OAuth 2: TokenExpiredError und JsonWebTokenError
-    // https://tools.ietf.org/html/rfc6749#section-5.2
-    // https://tools.ietf.org/html/rfc6750#section-3.1
-    validateJwt(req: Request) {
-        // Authorization   Bearer ...
+    /**
+     * Ein _JSON Web Token_ soll validiert werden.
+     *
+     * Falls der Token gültig ist, wird ein Objekt vom Typ {@linkcode User} mit
+     * dem zugehörigen User zurückgeliefert.
+     *
+     * Falls das Einloggen nicht erfolgreich war, wird ein Error geworfen:
+     *
+     * - `TokenExpiredError` durch `verify()` von `jsonwebtoken`.
+     * - `JsonWebTokenError?  durch `verify()` von `jsonwebtoken`.
+     * - {@linkcode NoTokenError}, falls es keinen Token gibt.
+     * - {@linkcode UserInvalidError}, falls es den zugehörigen User nicht (mehr) gibt.
+     *
+     * TokenExpiredError und JsonWebTokenError sind gemäß OAuth2 implementiert:
+     *
+     * - https://tools.ietf.org/html/rfc6749#section-5.2
+     * - https://tools.ietf.org/html/rfc6750#section-3.1
+     *
+     * @param token JSON Web Token
+     * @returns ein Objekt vom Typ {@linkcode User}
+     */
+    validateJwt(token: string | undefined) {
         // https://tools.ietf.org/html/rfc7230
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
-        const { token } = req;
 
         // Keine "Timing Attack" durch zeichenweises Vergleichen, wenn
         // unterschiedliche Antwortzeiten bei 403 entstehen
         // https://snyk.io/blog/node-js-timing-attack-ccc-ctf
         // Eine von Error abgeleitete Klasse hat die Property "message"
-        // eslint-disable-next-line security/detect-possible-timing-attacks
+        // eslint-disable-next-line security/detect-possible-timing-attacks, security-node/detect-possible-timing-attacks
         if (token === undefined) {
             logger.silly(
                 'AuthService.validateJwt(): Fehler beim Header-Field Authorization',
             );
-            throw new AuthorizationInvalidError(
-                'Fehler beim Header-Field Authorization',
-            );
+            throw new NoTokenError();
         }
-        logger.silly(`AuthService.validateJwt(): token = ${token}`);
+        logger.silly('AuthService.validateJwt(): token=%s', token);
 
         const decoded = verify(token, secretOrPublicKey, verifyOptions);
         logger.debug(
-            'AuthService.validateJwt(): Der JWT-Token wurde decodiert: ' +
-                `${JSON5.stringify(decoded)}`,
+            'AuthService.validateJwt(): Der JWT-Token wurde decodiert: %s',
+            decoded,
         );
 
         // Destructuring fuer sub(ject): decoded ist vom Typ "object | string"
         const tmpDecoded: unknown = decoded;
         const { sub } = tmpDecoded as { sub: string };
-        logger.debug(`AuthService.validateJwt(): sub: ${sub}`);
+        logger.debug('AuthService.validateJwt(): sub=%s', sub);
 
         const user = this.userService.findById(sub);
         if (user === undefined) {
-            logger.silly(`AuthService.validateJwt(): Falsche User-Id: ${sub}`);
-            throw new TokenInvalidError(`Falsche User-Id: ${sub}`);
+            logger.silly('AuthService.validateJwt(): Falsche User-Id: %s', sub);
+            throw new UserInvalidError(`Falsche User-Id: ${sub}`);
         }
 
         // Request-Objekt um user erweitern:
         // fuer die spaetere Ermittlung der Rollen nutzen
-        (req as any).user = user;
+        // "Type Merging" in TypeScript: siehe tsconfig.json
+        // https://www.typescriptlang.org/docs/handbook/declaration-merging.html
+        return user;
     }
 
-    // bereits erledigt durch Validierung des Tokens
-    // Basic Authentifizierung: ueberladen bzw. neu implementieren
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    isLoggedIn(_: Request) {
-        logger.debug('AuthService.isLoggedIn(): ok');
-        return true;
-    }
-
-    hasAnyRole(req: Request, roles: readonly string[]) {
+    /**
+     * Hat ein eingeloggter User mindestens eine der angegebenen Rollen?
+     *
+     * @param user JSON-Objekt zum Interface {@linkcode User}.
+     * @param roles JSON-Array mit den Rollen als string.
+     * @returns true, falls mindestens eine Rolle beim User vorhanden ist.
+     *  Sonst false.
+     */
+    hasAnyRole(user: User, roles: readonly string[]) {
         const rolesNormalized = this.roleService.getNormalizedRoles(roles);
-        const result = this.userHasAnyRole((req as any).user, rolesNormalized);
-        logger.debug(`AuthService.hasAnyRole(): ${result}`);
+        const result = this.userHasAnyRole(user, rolesNormalized);
+        logger.debug('AuthService.hasAnyRole(): %s', result);
         return result;
     }
 
-    userHasAnyRole(user: User | undefined, roles: readonly string[]) {
-        if (user === undefined || user.roles === undefined) {
+    private userHasAnyRole(user: User, roles: readonly string[]) {
+        if (user.roles === undefined) {
             return false;
         }
         if (roles.length === 0) {
@@ -168,10 +197,10 @@ export class AuthService {
         }
 
         const userRoles = user.roles;
-        return roles.filter((role) => userRoles.includes(role)).length !== 0;
+        return roles.filter((role) => userRoles.includes(role)).length > 0;
     }
 
-    checkPassword(user: User | undefined, password: string) {
+    private checkPassword(user: User | undefined, password: string) {
         if (user === undefined) {
             logger.debug('AuthService.checkPassword(): Kein User-Objekt');
             return false;
@@ -185,13 +214,7 @@ export class AuthService {
         //  die ersten 22 Zeichen kodieren einen 16-Byte Wert fuer den Salt
         //  danach das chiffrierte Passwort
         const result = compareSync(password, user.password);
-        logger.debug(`AuthService.checkPassword(): ${result}`);
+        logger.debug('AuthService.checkPassword(): %s', result);
         return result;
-    }
-
-    hashPassword(password: string) {
-        const salt = genSaltSync();
-        const hash = hashSync(password, salt);
-        logger.warn(`Verschluesseltes Password: ${hash}`);
     }
 }

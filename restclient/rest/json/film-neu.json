@@ -1,0 +1,19 @@
+{
+  "titel": "Test",
+  "rating": 3,
+  "art": "DVD",
+  "studio": "WarnerBros",
+  "preis": 99.9,
+  "rabatt": 0.1,
+  "lieferbar": true,
+  "datum": "2020-02-01",
+  "isan": "0-0070-0644-6",
+  "regisseur": "Peter Jackson",
+  "genre": ["Comedy"],
+  "darsteller": [
+    {
+      "vorname": "Theo",
+      "nachname": "Test"
+    }
+  ]
+}

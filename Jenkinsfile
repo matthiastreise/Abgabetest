@@ -1,7 +1,7 @@
 #!groovy
 
 /*
- * Copyright (C) 2020 - present Alexander, Matthias, Glynis 
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 // https://www.jenkins.io/doc/tutorials/create-a-pipeline-in-blue-ocean/
@@ -23,27 +23,37 @@ pipeline {
     // agent any
     agent {
         docker {
-            // NICHT: node:...-alpine
-            // GNU C++ wird für Python benoetigt wird, aber die Bibliotheken
-            // insbesondere fuer GNU C++ sind in Alpine anders strukturiert als
-            // in Debian und Ubuntu.
-            image 'node:14.13.0-buster'
+            // https://www.debian.org/releases: Buster = Debian 10
+            // IOException bei 'gcr.io/distroless/nodejs-debian10:14'
+            // image 'node:15.11.0-buster'
+            image 'node:14.16.0-buster'
             // https://stackoverflow.com/questions/62330354/jenkins-pipeline-alpine-agent-apk-update-error-unable-to-lock-database-permis
             // https://stackoverflow.com/questions/42630894/jenkins-docker-how-to-control-docker-user-when-using-image-inside-command/51986870#51986870
             // https://stackoverflow.com/questions/42743201/npm-install-fails-in-jenkins-pipeline-in-docker
             args '--publish 3000:3000 --publish 5000:5000'
             // fuer "apt-get install ..."
             args '--user root:root'
+
+            // node:14.16.0-buster : in /etc/passwd gibt es "node" mit uid=1000
+            //args '--user 1000:1000'
         }
     }
 
-    // environment {
-    //     HOME = "${WORKSPACE}"
-    // }
+    // Umgebungsvariable:
+    environment {
+        // Atlas:
+        DB_HOST = 'mongodb+srv://alexander:AFJHiKeMpd669Ns@cluster0.pluyf.mongodb.net/SWEFilm?retryWrites=true&w=majority'
+        DB_USER = 'alexander'
+        DB_PASS = 'AFJHiKeMpd669Ns'
+        DB_POPULATE = true
+        DB_POPULATE_FILES = true
 
-    //options {
-    //    buildDiscarder(logRotator(numToKeepStr: '10'))
-    //}
+        LOG_DIR = './log'
+        LOG_COLOR_CONSOLE = false
+        MAIL_HOST = 'skip'
+        USER_PASSWORD = 'p'
+        USER_PASSWORD_FALSCH = 'FALSCH'
+    }
 
     stages {
         // Stage = Logisch-zusammengehoerige Aufgaben der Pipeline:
@@ -66,7 +76,7 @@ pipeline {
 
                 // https://www.jenkins.io/doc/pipeline/steps/git
                 // "named arguments" statt Funktionsaufruf mit Klammern
-                git url: 'https://github.com/matthiastreise/Abgabetest', branch: 'master', poll: true
+                git url: 'https://gitlab.com/L3XAWeasel/swess2021abgabe1', branch: 'master', poll: true
             }
         }
 
@@ -74,16 +84,33 @@ pipeline {
             steps {
                 // https://stackoverflow.com/questions/51416409/jenkins-env-node-no-such-file-or-directory
                 // https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions
-                // https://pkgs.alpinelinux.org/package/edge/main/x86/nodejs
-                // Beachte: Alpine nutzt apk statt apt-get wie bei Debian (und Ubuntu)
-                sh 'curl -sL https://deb.nodesource.com/setup_current.x | bash -; apt-get install --yes nodejs'
-                sh 'apt-get install --yes python3'
+                // https://www.debian.org/distrib/packages
+                // https://packages.debian.org/buster/nodejs
+                // sh 'curl -sL https://deb.nodesource.com/setup_current.x | bash -; apt-get install --yes nodejs'
+                sh 'cat /etc/passwd'
+                sh 'curl --silent --location https://deb.nodesource.com/setup_14.x | bash -; apt-get install --yes nodejs'
 
-                // TODO Docker CE mit apt-get installieren (s.u.)
+                sh 'npm i -g npm'
+
+                // https://packages.debian.org/search?keywords=search
+                // https://packages.debian.org/buster/npm
+                //sh 'apt-get install --yes npm=5.8.0+ds6-4+deb10u2'
+
+                // https://packages.debian.org/stable/python
+                // https://packages.debian.org/stable/python/python3
+                // https://packages.debian.org/buster/python3
+                sh 'apt-get install --yes python3=3.7.3-1'
+
+                // https://docs.docker.com/engine/install/debian
+                // https://packages.debian.org/buster/docker.io
+                sh 'apt-get install --yes --no-install-recommends docker.io=18.09.1+dfsg1-7.1+deb10u3'
+
                 // https://medium.com/@manav503/how-to-build-docker-images-inside-a-jenkins-container-d59944102f30
 
                 sh 'node --version'
                 sh 'npm --version'
+                sh 'docker --version'
+                sh 'id'
 
                 script {
                     if (!fileExists("${env.WORKSPACE}/package.json")) {
@@ -105,57 +132,92 @@ pipeline {
         stage('Test, Codeanalyse, Security, Dok.') {
             steps {
                 parallel(
-                    // 'Test': {
-                           // Cannot find module '/var/jenkins_home/workspace/song/node_modules/bcrypt/lib/binding/napi-v3/bcrypt_lib.node' from 'node_modules/bcrypt/bcrypt.js'
-                    //     sh 'npm run test:coverage'
-                    // },
+                    'Test': {
+                        echo 'TODO: DB-Verbindung fuer Tests konfigurieren'
+                        //sh 'npm run test:coverage'
+                    },
                     'ESLint': {
                         sh 'npm run eslint'
                     },
                     'EJS-Lint': {
-                        sh 'npm run ejs-lint'
+                        echo 'TODO: EJS-Lint ist auskommentiert'
+                        //sh 'npm run ejs-lint'
                     },
                     'Security': {
-                        // FIXME https://github.com/ardatan/graphql-tools/issues/2041
-                        //sh 'npm audit --production'
+                        sh 'npm audit --production'
                     },
                     'AsciiDoctor': {
                         sh 'npm run asciidoc'
                     },
+                    'TypeDoc': {
+                        echo 'TODO: TypeDoc ist auskommentiert'
+                        //sh 'npm run typedoc'
+                    },
                     'reveal.js': {
-                        sh 'npm run revealjs'
+                        echo 'TODO: reveal.js ist auskommentiert'
+                        //sh 'npm run revealjs'
                     }
                 )
             }
 
             post {
                 always {
-                   echo 'TODO: Berichte erstellen'
+                  echo 'TODO: Links fuer Coverage, TypeDoc und reveal.js'
+
+                  //publishHTML target : [
+                  //  reportDir: 'coverage',
+                  //  reportFiles: 'index.html',
+                  //  reportName: 'Coverage (Istanbul)',
+                  //  reportTitles: 'Coverage'
+                  //]
+
+                  //publishHTML target : [
+                  //  reportDir: 'doc/api',
+                  //  reportFiles: 'index.html',
+                  //  reportName: 'TypeDoc',
+                  //  reportTitles: 'TypeDoc'
+                  //]
+
+                  publishHTML target : [
+                    reportDir: 'doc/entwicklerhandbuch/html',
+                    reportFiles: 'entwicklerhandbuch.html',
+                    reportName: 'Entwicklerhandbuch',
+                    reportTitles: 'Entwicklerhandbuch'
+                  ]
+
+                  //publishHTML target : [
+                  //  reportDir: 'doc/folien',
+                  //  reportFiles: 'folien.html',
+                  //  reportName: 'Folien (reveal.js)',
+                  //  reportTitles: 'TypeDoc'
+                  //]
                 }
 
                 success {
                     script {
-                        if (fileExists("${env.WORKSPACE}/song.zip")) {
-                            sh 'rm song.zip'
+                        if (fileExists("${env.WORKSPACE}/film.zip")) {
+                            sh 'rm film.zip'
                         }
                     }
                     // https://www.jenkins.io/doc/pipeline/steps/pipeline-utility-steps/#zip-create-zip-file
-                    zip zipFile: 'song.zip', archive: false, dir: 'dist'
-                    // jobs/song/builds/.../archive/song.zip
-                    archiveArtifacts 'song.zip'
+                    zip zipFile: 'film.zip', archive: false, dir: 'dist'
+                    // jobs/film/builds/.../archive/film.zip
+                    archiveArtifacts 'film.zip'
                 }
             }
         }
 
         stage('Docker Image bauen') {
             steps {
-              echo 'TODO: Docker Image bauen'
+              echo 'TODO: Docker-Image bauen'
+              // Docker-Installation und laufender Docker-Daemon erforderlich
+              // sh 'docker build --tag swegruppe10/film:1.0.0 .'
             }
         }
 
         stage('Deployment fuer Kubernetes') {
             steps {
-                echo 'TODO: Deployment fuer Kubernetes'
+                echo 'TODO: Deployment fuer Kubernetes mit z.B. Ansible'
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,15 +12,29 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export * from './song';
+/**
+ * Das Modul enthält die Konfigurationsdaten für
+ * - _Node_
+ * - _Express_
+ * - DB-Zugriff auf _MongoDB_
+ * - _JWT_ (JSON Web Token)
+ * - Logging mit _Winston_ und _Morgan_
+ * - _nodemailer_
+ * - MIME-Typen
+ * - _Playground_ von _Apollo_
+ * @packageDocumentation
+ */
+
+export * from './apollo';
+export * from './cloud';
 export * from './db';
+export * from './express';
+export * from './kubernetes';
 export * from './jwt';
 export * from './logger';
 export * from './mail';
 export * from './mime';
-export * from './password';
-export * from './requests';
-export * from './server';
+export * from './node';

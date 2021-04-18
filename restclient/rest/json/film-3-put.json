@@ -1,0 +1,13 @@
+{
+  "titel": "Geaendert",
+  "rating": 5,
+  "art": "VHS",
+  "studio": "Pixar",
+  "preis": 9999,
+  "rabatt": 0.99,
+  "lieferbar": true,
+  "datum": "2020-02-01",
+  "isan": "0-0070-9732-8",
+  "regisseur": "Steven Spielberg",
+  "genre": ["Abenteur", "Comedy"]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,13 +12,22 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Das Modul besteht aus der Funktion {@linkcode corsHandler} für die
+ * Handhabung von CORS.
+ * @packageDocumentation
  */
 
 // Einlesen von application/json im Request-Rumpf
 // Fuer multimediale Daten (Videos, Bilder, Audios): raw-body
 import cors from 'cors';
 
+/**
+ * Funktion für die Handhabung von CORS.
+ */
 export const corsHandler =
     // CORS = Cross Origin Resource Sharing
     //   http://www.html5rocks.com/en/tutorials/cors
@@ -44,5 +53,5 @@ export const corsHandler =
             'If-Modified-Since',
         ],
         exposedHeaders: ['Location', 'ETag'],
-        maxAge: 86400,
+        maxAge: 86_400,
     });

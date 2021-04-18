@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,15 +12,32 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Das Modul enthält die Konfiguration für den Mail-Client mit _nodemailer_.
+ * @packageDocumentation
  */
 
 import type { Options } from 'nodemailer/lib/smtp-transport';
-import { serverConfig } from './server';
+import { mailConfigEnv } from './env';
 
+// HS Karlsruhe:   smtp.hs-karlsruhe.de
+// nullish coalescing
+const host = mailConfigEnv.host ?? 'mailserver';
+// HS Karlsruhe:   25
+const portStr = mailConfigEnv.port ?? '5025';
+const port = Number.parseInt(portStr, 10);
+const loggerStr = mailConfigEnv.log;
+const logger = loggerStr === 'true' || loggerStr === 'TRUE';
+
+/**
+ * Konfiguration für den Mail-Client mit _nodemailer_.
+ */
 export const mailConfig: Options = {
-    host: serverConfig.mailHost,
-    port: serverConfig.mailPort,
+    host,
+    port,
     secure: false,
 
     // Googlemail:
@@ -31,7 +48,7 @@ export const mailConfig: Options = {
     // }
 
     priority: 'normal',
-    logger: serverConfig.mailLog,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    headers: { 'X-ProvidedBy': 'Software Engineering' },
+    logger,
 };
+Object.freeze(mailConfig);
+console.info('mailConfig: %o', mailConfig);

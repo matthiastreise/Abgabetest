@@ -1,0 +1,103 @@
+:revealjsdir: ../../node_modules/reveal.js
+:revealjs_slideNumber: true
+:sectnums:
+
+// Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// https://asciidoctor.org/docs/asciidoctor-revealjs
+
+= Abgabe 1, Praktische Umsetzung des Übungsstoffs
+
+Alexander Mader, Matthias Treise, Marius Gulden
+
+== Gliederung
+
+* Projektplanung
+* Zeiterfassung
+* REST-Schnittstelle
+* GraphQL-Schnittstelle
+* Visualisierung
+* Codeanalyse
+* DB-Zugriff
+* Security
+* Integrationstests
+* Git
+* Docker
+* Heroku
+* Jenkins
+* Dokumentation
+
+== Projektplanung
+
+* Project Professional
+
+== Zeiterfassung
+
+* Excelsheet
+
+== GraphQL-Schnittstelle
+
+* Schnittstelle mit Lesen und Schreiben
+
+== Visualisierung
+
+* Request
+* Response
+* Validierung
+
+== Codeanalyse
+
+* ESLint
+* Prettier
+* SonarQube
+
+== DB-Zugriff
+
+* Atlas
+* Visualisierung persistenter Daten
+
+== Security
+
+* Visualisierung des Zugriffschutzes
+
+== Integrationstest
+
+* Test einschl. 400er Fehler
+* Test-Coverage
+
+== Git
+
+* Github
+* https://gitlab.com/L3XAWeasel/swess2021abgabe1
+
+== Docker
+
+* Image
+* Container
+
+
+== Heroku
+
+* Deployment
+
+== Jenkins
+
+* ohne Tests
+
+== Dokumentation
+
+* AsciiDoctor
+* PlantUML

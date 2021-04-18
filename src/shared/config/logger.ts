@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,34 +12,75 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Cloud, serverConfig } from './server';
+import { Cloud, cloud } from './cloud';
+import { logConfigEnv, nodeConfigEnv } from './env';
+import JSON5 from 'json5';
 import { format } from 'winston';
+import { resolve } from 'path';
+
+/**
+ * Das Modul enthält die Konfiguration für den Logger mit _Winston_ sowie
+ * die Request-Protokollierung mit _Morgan_.
+ * @packageDocumentation
+ */
 
 // Winston: seit 2010 bei GoDaddy (Registrierung von Domains)
 // Log-Levels: error, warn, info, debug, verbose, silly, ...
 // Medien (= Transports): Console, File, ...
 // https://github.com/winstonjs/winston/blob/master/docs/transports.md
-// Alternative: Bunyan, Pino
+// Alternative: Pino, log4js, Bunyan
 
-const { colorize, combine, json, simple, timestamp } = format;
-const { cloud, production } = serverConfig;
+// nullish coalescing
+const logLevelConsole = logConfigEnv.logLevelConsole ?? 'info';
+const { logDir, colorConsole } = logConfigEnv;
 
-const loglevelConsoleDev = cloud === undefined ? 'info' : 'debug';
+/**
+ * Sollen die Protokoll-Ausgaben in der Konsole farbig dargestellt werden?
+ */
+export const logColorConsole =
+    colorConsole === undefined ||
+    (colorConsole !== 'false' && colorConsole !== 'FALSE'); // eslint-disable-line @typescript-eslint/no-extra-parens
+
+const { colorize, combine, json, simple, splat, timestamp } = format;
+
+const loglevelConsoleDev = cloud === undefined ? logLevelConsole : 'debug';
 const consoleFormat =
-    cloud === undefined ? combine(colorize(), simple()) : simple();
+    cloud !== undefined || !logColorConsole
+        ? combine(splat(), simple())
+        : combine(splat(), colorize(), simple());
+const { nodeEnv } = nodeConfigEnv;
+const production = nodeEnv === 'production' || nodeEnv === 'PRODUCTION';
+/**
+ * Optionen für die Protokoll-Ausgaben in der Konsole.
+ */
 export const consoleOptions = {
     level: production && cloud !== Cloud.HEROKU ? 'warn' : loglevelConsoleDev,
     format: consoleFormat,
 };
+Object.freeze(consoleOptions);
+console.log(`Log-Optionen fuer Konsole: ${JSON5.stringify(consoleOptions)}`); // eslint-disable-line security-node/detect-crlf
 
+/**
+ * Optionen für die Protokoll-Ausgaben in der Protokolldatei.
+ */
 export const fileOptions = {
-    filename: 'server.log',
+    filename: resolve(logDir ?? '/var/log/node', 'server.log'),
     level: production ? 'info' : 'debug',
-    // 250 KB
-    maxsize: 250000,
+    // in KB
+    maxsize: 250_000,
     maxFiles: 3,
-    format: combine(timestamp(), json()),
+    format: combine(splat(), timestamp(), json()),
 };
+Object.freeze(fileOptions);
+console.log(`Log-Optionen fuer Logdatei: ${JSON5.stringify(fileOptions)}`); // eslint-disable-line security-node/detect-crlf
+
+/**
+ * Formatierung, wenn mit _Morgan_ die Requests protokolliert werden.
+ * `dev`, wenn in der Konsole die Winston-Ausgaben farbig dargestellt werden.
+ * Sonst `short`.
+ */
+export const morganFormat = logColorConsole ? 'dev' : 'short';
+Object.freeze(morganFormat);

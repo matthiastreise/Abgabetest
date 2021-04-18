@@ -1,0 +1,109 @@
+// Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+= Entwicklerhandbuch
+Marius Gulden <guma1038@hs-karlsruhe.de>
+:doctype: book
+:toc: left
+:sectanchors:
+:sectlinks:
+:sectnums:
+:source-highlighter: coderay
+:icons: font
+// :kroki-server-url: https://kroki.io
+
+// https://github.com/asciidoctor/asciidoctorj
+// https://github.com/asciidoctor/asciidoctor-diagram
+// http://de.plantuml.com/classes.html
+// http://de.plantuml.com/component.html
+// https://github.com/odrotbohm/asciidoctor-plantuml
+
+IMPORTANT: Copyright (C) 2021 - Marius Gulden, Alexander Mader, Matthias Treise, Hochschule Karlsruhe. +
+           Free use of this software is granted under the terms of the
+           GNU General Public License (GPL) v3. +
+           For the full text of the license, see the http://www.gnu.org/licenses/gpl-3.0.html[license] file.
+
+== Der Applikationsserver
+
+=== Der Applikationsserver im Überblick
+
+Dieser Server implementiert beispielhaft eine Anwendungslogik zum Speichern, Verändern und Abrufen aller Daten, die zum Beispiel ein Kino oder ein Web-Shop zu Filmen benötigen.
+Der Applikationsserver wurde mit GraphQL in Typescript implementiert. Der Zugriff erfolt über eine REST-Schnittstelle mit Token-Authentifizierung. Als Persistenzmechanismus wird eine MongoDB-Datenbank verwendet. Die zu speichernden Entitys sind dabei eindeutig durch UUID's, die in der Anwendungslogik generiert werden, referenzierbar.
+Es wird ein Dockerfile zur Verfügung gestellt um ein Deployment mittels eines Docker-Images zu ermöglichen.
+
+.Use Cases
+[plantuml,use-cases,svg]
+----
+include::use-cases.puml[]
+----
+
+Die Use-Cases verteilen sich auf zwei Rollen von Anwendern.
+Ein Gast des Systems, also ein normaler User hat die Berechtigungen Filme zu suchen und die Daten herunterzuladen.
+Ein Admin kann zusätzlich neue Filme anlegen, vorhandene Filme ändern und löschen und außerdem Dateien hoch- und herunterladen.
+
+.Komponentendiagramm
+[plantuml,komponenten,svg]
+----
+include::komponenten.puml[]
+----
+
+=== Die REST-Schnittstelle
+
+Die REST-Schnittstelle ist implementiert in HTTP/2. Neben dem Login stellt sie alle fünf HTTP-Methoden bereit.
+Mit GET können alle Daten zu einem gesuchten Film abgefragt werden, mit POST kann ein neuer Film angelegt werden, mittels PUT und PATCH können Daten bereits existierender Filme veränndert werden und mittels DELETE können Filme gelöscht werden.
+
+.Handler für die REST-Schnittstelle
+[plantuml,FilmHandler,svg]
+----
+include::FilmHandler.puml[]
+----
+
+=== Der Anwendungskern
+
+Betrachtet wird die Anwendungslogik von der Seite des Clients aus.
+Der Client greift durch jede Funktionalität welche in der REST-Schnittstelle implementiert ist über einen Router in Express auf Funktionen in Express zu welchen einen beliebigen Request an die zum Request passende Handler Klasse weiterleitet. Der Anwendungskern ist hier geteilt in einen Teil zum Verarbeiten von "normalen" Requests und einen Teil zum Verarbeiten von Requests in Verbindung mit dem File Up- oder Download.
+Die jeweilige Handler-Klasse übergibt den Request der zugehörigen Serviceklasse.
+Der Anwendungskern hat Zugriffsmöglichkeiten auf Funktionalitäten, welche sich in zwei Kategorien teilen lassen.
+Zum einen Mailversenden mittels eines Mailservers, welcher über den Nodemailer adressiert wird und zum anderen den Datenbankserver, welcher in Mongo implementiert ist. Dazu greift der Anwendungskern auf Funktionalitäten aus Mongoose und der MongoDB Native Drivers zurück.
+Die Anwendung ist asynchron implementiert und erlaubt somit den Zugriff durch mehrere Clients gleichzeitig. 
+
+
+.Anwendungskern mit Mongoose
+[plantuml,FilmService,svg]
+----
+include::FilmService.puml[]
+----
+
+=== Interface für Entities und das Mongoose-Model
+
+In die Entity Film sind neben den Standardfeldern ID (_id), Version (__v), createdAt und updatedAt auch Felder passend zur Logik eines Films implementiert. Die beiden wichtigsten Informationen um eienn Film zu identifizieren sind hierbei die ISAN und der Titel.
+Dazu kommen noch Rating, Art, Studio und Regisseur, für zusätzliche Informationen und Funktionalitäten und Differenzierbarkeit.
+Die resultirenden Funktionen werden werden über ein Moongose Model für die Datenbank umgesetzt.
+
+.Entity, Model und Schema
+[plantuml,Film,svg]
+----
+include::Film.puml[]
+----
+
+== Programmierrichtlinien für TypeScript und JavaScript
+
+Für die Programmierung mit *TypeScript* und *JavaScript* wird folgende
+Styleguides empfehlenswert:
+
+[horizontal]
+_Microsoft_:: https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines
+_Angular_:: https://angular.io/docs/ts/latest/guide/style-guide.html
+_React_:: https://github.com/airbnb/comedy/tree/master/react

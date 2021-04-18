@@ -3,5 +3,5 @@
   "compilerOptions": {
     "outDir": "../out-tsc/test"
   },
-  "exclude": ["../config", "../dist", "../scripts", "../test", "../coverage"]
+  "exclude": ["../config", "../dist", "../scripts", "../temp"]
 }

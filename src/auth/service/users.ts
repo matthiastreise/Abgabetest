@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,51 +12,65 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Das Modul besteht aus dem JSON-Array mit den vorhandenen Benutzerkennungen
+ * vom Typ {@linkcode User}.
+ * @packageDocumentation
  */
 
 import type { User } from './user.service';
 import dotenv from 'dotenv';
 
 dotenv.config();
-const { env } = process;
-const { USER_PASSWORD_ENCODED } = env;
-const password = USER_PASSWORD_ENCODED as string;
+const password = '$2b$10$YTg4.iW.FPRqHExVLRf05Ob/z/BQqjUxJgncct2TgxGBjl4cCUNGS';
 
-// NICHT: Set statt [], weil es fuer Set keine Suchfunktion gibt
+/**
+ * Ein JSON-Array der Benutzerdaten mit den vorhandenen Rollen.
+ * Nicht Set, weil es dafür keine Suchfunktion gibt.
+ */
 export const users: User[] = [
     {
         id: '20000000-0000-0000-0000-000000000001',
         username: 'admin',
         password,
         email: 'admin@acme.com',
-        roles: ['admin', 'mitarbeiter', 'kunde'],
+        roles: ['admin', 'mitarbeiter', 'abteilungsleiter', 'kunde'],
     },
     {
         id: '20000000-0000-0000-0000-000000000002',
-        username: 'Alex',
+        username: 'adriana.alpha',
         password,
-        email: 'alex@acme.com',
-        roles: ['admin', 'mitarbeiter'],
+        email: 'adriana.alpha@acme.com',
+        roles: ['admin', 'mitarbeiter', 'kunde'],
     },
     {
         id: '20000000-0000-0000-0000-000000000003',
-        username: 'Matthias',
+        username: 'alfred.alpha',
         password,
-        email: 'matthias@acme.com',
+        email: 'alfred.alpha@acme.com',
         roles: ['mitarbeiter', 'kunde'],
     },
     {
         id: '20000000-0000-0000-0000-000000000004',
-        username: 'Glynis',
+        username: 'antonia.alpha',
         password,
-        email: 'glynis@acme.com',
+        email: 'antonia.alpha@acme.com',
+        roles: ['mitarbeiter', 'kunde'],
+    },
+    {
+        id: '20000000-0000-0000-0000-000000000005',
+        username: 'dirk.delta',
+        password,
+        email: 'dirk.delta@acme.com',
         roles: ['kunde'],
     },
     {
         id: '20000000-0000-0000-0000-000000000006',
-        username: 'Marie',
+        username: 'emilia.epsilon',
         password,
-        email: 'marie@acme.com',
+        email: 'emilia.epsilon@acme.com',
     },
 ];

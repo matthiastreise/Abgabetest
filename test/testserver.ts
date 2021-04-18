@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,28 +12,27 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import { Agent, createServer } from 'https';
-import { connectDB, logger, populateDB, serverConfig } from '../src/shared';
+import { connectDB, logger, populateDB, nodeConfig } from '../src/shared';
+import type { RequestListener, Server } from 'http';
 import type { AddressInfo } from 'net';
-import type { RequestListener } from 'http';
 import type { SecureContextOptions } from 'tls';
-import type { Server } from 'http';
+import type {} from 'http';
 import { app } from '../src/app';
 
 // -----------------------------------------------------------------------------
 // T e s t s e r v e r   m i t   H T T P S   u n d   R a n d o m   P o r t
 // -----------------------------------------------------------------------------
-const { host, dev } = serverConfig;
 let server: Server;
 
 export const createTestserver = async () => {
-    await populateDB(dev);
+    await populateDB();
     await connectDB();
 
-    const { cert, key } = serverConfig;
+    const { cert, key } = nodeConfig;
     // Shorthand Properties
     const options: SecureContextOptions = { key, cert, minVersion: 'TLSv1.3' };
     server = createServer(options, app as RequestListener)
@@ -42,6 +41,7 @@ export const createTestserver = async () => {
             logger.info(`Node ${process.version}`);
             const address = server.address() as AddressInfo;
             if (address !== null && typeof address !== 'string') {
+                const { host } = nodeConfig;
                 logger.info(
                     `Testserver ist gestartet: https://${host}:${address.port}`,
                 );

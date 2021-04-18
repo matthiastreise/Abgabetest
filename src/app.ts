@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,21 +12,16 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {
-    MAX_REQUESTS_PER_WINDOW,
-    WINDOW_SIZE,
-    internalError,
-    logRequestHeader,
-    notFound,
-    notYetImplemented,
-    responseTimeFn,
-    serverConfig,
-    validateContentType,
-    validateUUID,
-} from './shared';
+/**
+ * Das Modul besteht vor allem aus der Klasse internen Klasse `App`, um die
+ * Express-App zu bauen und bereitzustellen. Die Express-App wird dann im
+ * Objekt {@linkcode app} exportiert.
+ * @packageDocumentation
+ */
+
 import {
     create,
     deleteFn,
@@ -35,33 +30,37 @@ import {
     findById,
     update,
     upload,
-} from './song/rest';
-import { index, neuerSong, suche } from './song/html';
+} from './film/rest';
+import {
+    devMode,
+    enablePlayground,
+    internalError,
+    logRequestHeader,
+    logger,
+    morganFormat,
+    notFound,
+    notYetImplemented,
+    rateLimitOptions,
+    validateContentType,
+    validateUUID,
+} from './shared';
 import { isAdmin, isAdminMitarbeiter, login, validateJwt } from './auth';
 // Einlesen von application/json im Request-Rumpf
 // Fuer multimediale Daten (Videos, Bilder, Audios): raw-body
 import { json, urlencoded } from 'body-parser';
-import { resolvers, typeDefs } from './song/graphql';
+import { resolvers, typeDefs } from './film/graphql';
 import { ApolloServer } from 'apollo-server-express';
 import type { ApolloServerExpressConfig } from 'apollo-server-express';
-import type { Options } from 'express-rate-limit';
 import bearerToken from 'express-bearer-token';
 import compression from 'compression';
 import express from 'express';
 import { helmetHandlers } from './security';
-import { join } from 'path';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import responseTime from 'response-time';
 
 const { Router } = express; // eslint-disable-line @typescript-eslint/naming-convention
 
-const rateLimitOptions: Options = {
-    // z.B. 15 Minuten als Zeitfenster (Ms = Millisekunden)
-    windowMs: WINDOW_SIZE,
-    // z.B. max 100 requests/IP in einem Zeitfenster
-    max: MAX_REQUESTS_PER_WINDOW,
-};
 const limiter = rateLimit(rateLimitOptions);
 
 // hochgeladene Dateien als Buffer im Hauptspeicher halten
@@ -69,9 +68,15 @@ const limiter = rateLimit(rateLimitOptions);
 // const uploader = multer({storage})
 
 const apiPath = '/api';
+
+/**
+ * Die Pfade, die es an der REST-, GraphQL- und HTML-Schnittstelle gibt,
+ * werden in einem JSON-Objekt gebündelt.
+ */
 export const PATHS = {
-    songs: `${apiPath}/songs`,
-    labels: `${apiPath}/labels`,
+    // Template String
+    filme: `${apiPath}/filme`,
+    studioe: `${apiPath}/studioe`,
     login: `${apiPath}/login`,
     graphql: '/graphql',
     html: '/html',
@@ -80,20 +85,30 @@ export const PATHS = {
 // Express als Middleware = anwendungsneutrale Dienste-/Zwischenschicht,
 // d.h. Vermittler zwischen Request und Response.
 // Alternativen zu Express (hat die hoechsten Download-Zahlen):
+// * Nest (NestJS): auf Basis von TypeScript und Express
+// * Fastify: in Anlehnung an die Konzepte von Hapi und Express
 // * Hapi: von Walmart
-// * Restify
+// * Restify: von Netflix
+// * Loopback: von IBM, in TypeScript implementiert, ausgehend von Express
 // * Koa: von den urspruengl. Express-Entwicklern
-// * Sails: baut auf Express auf, Waterline als ORM
+// * Sails: baut auf Express auf, Waterline als ORM, z.B. mit PostgreSQL
 // * Kraken: baut auf Express auf
 //           von PayPal
 //           verwaltet von der Node.js Foundation
 //           genutzt von Oracle mit Oracle JET
 
+/**
+ * Die Klasse `App` baut im Konstruktor die Express-App, die dann als
+ * readonly-Property mit public-Sichtbarkeit zugreifbar ist.
+ */
 class App {
-    // Das App- bzw. Express-Objekt ist zustaendig fuer:
-    //  * Konfiguration der Middleware
-    //  * Routing
-    // http://expressjs.com/en/api.html
+    /**
+     * Das (App- bzw. Express-Objekt) [http://expressjs.com/en/api.html] ist
+     * zuständig für:
+     *
+     * - Konfiguration der Middleware und
+     * - Routing
+     */
     readonly app = express();
 
     constructor() {
@@ -102,14 +117,17 @@ class App {
     }
 
     private config() {
-        if (serverConfig.dev) {
-            // Logging der eingehenden Requests in der Console
+        if (devMode) {
+            // Logging der Requests in der Console
             this.app.use(
-                morgan('dev'),
-                // Protokollierung der Response Time
-                responseTime(responseTimeFn),
-                // Protokollierung des eingehenden Request-Headers
+                // Protokollierung des Requests mit Morgan
+                morgan(morganFormat),
+                // Protokollierung des Request-Headers mit Winston
                 logRequestHeader,
+                // Protokollierung der Response Time
+                responseTime((_req, _res, time) =>
+                    logger.debug('Response time: %d ms', time),
+                ),
             );
         }
 
@@ -131,17 +149,16 @@ class App {
     }
 
     private routes() {
-        this.songsRoutes();
-        this.labelRoutes();
+        this.filmeRoutes();
+        this.studioRoutes();
         this.loginRoutes();
-        this.songGraphqlRoutes();
-        this.htmlRoutes();
+        this.filmGraphqlRoutes();
 
         this.app.get('*', notFound);
         this.app.use(internalError);
     }
 
-    private songsRoutes() {
+    private filmeRoutes() {
         // vgl: Spring WebFlux.fn
         // https://expressjs.com/en/api.html#router
         // Beispiele fuer "Middleware" bei Express:
@@ -165,8 +182,8 @@ class App {
             .get(find)
             .post(
                 validateJwt,
-                validateContentType,
                 isAdminMitarbeiter,
+                validateContentType,
                 json(),
                 create,
             );
@@ -178,8 +195,8 @@ class App {
             .put(
                 `/:${idParam}`,
                 validateJwt,
-                validateContentType,
                 isAdminMitarbeiter,
+                validateContentType,
                 json(),
                 update,
             )
@@ -187,13 +204,13 @@ class App {
             .put(`/:${idParam}/file`, validateJwt, isAdminMitarbeiter, upload)
             .get(`/:${idParam}/file`, download);
 
-        this.app.use(PATHS.songs, router);
+        this.app.use(PATHS.filme, router);
     }
 
-    private labelRoutes() {
+    private studioRoutes() {
         const router = Router(); // eslint-disable-line new-cap
         router.get('/', notYetImplemented);
-        this.app.use(PATHS.labels, router);
+        this.app.use(PATHS.studioe, router);
     }
 
     private loginRoutes() {
@@ -208,34 +225,21 @@ class App {
         this.app.use(PATHS.login, router);
     }
 
-    private songGraphqlRoutes() {
-        const { playground } = serverConfig;
+    private filmGraphqlRoutes() {
         // https://www.apollographql.com/docs/apollo-server/data/resolvers/#passing-resolvers-to-apollo-server
         const config: ApolloServerExpressConfig = {
             typeDefs,
             resolvers,
-            playground,
-            introspection: playground,
+            playground: enablePlayground,
+            introspection: enablePlayground,
         };
         const apollo = new ApolloServer(config);
         // https://www.apollographql.com/docs/apollo-server/integrations/middleware/#applying-middleware
         apollo.applyMiddleware({ app: this.app, path: PATHS.graphql });
     }
-
-    private htmlRoutes() {
-        const router = Router(); // eslint-disable-line new-cap
-        router.route('/').get(index);
-        router.route('/suche').get(suche);
-        router.route('/neuer-song').get(neuerSong);
-        this.app.use(PATHS.html, router);
-
-        // Alternativen zu Pug: EJS, Handlebars, ...
-        // https://github.com/expressjs/express/wiki#template-engines
-        this.app.set('view engine', 'ejs');
-        // __dirname ist das Verzeichnis ".../dist/server"
-        /* global __dirname */
-        this.app.set('views', join(__dirname, 'views'));
-        this.app.use(express.static(join(__dirname, 'public')));
-    }
 }
+
+/**
+ * Das Objekt mit der Express-App.
+ */
 export const { app } = new App();

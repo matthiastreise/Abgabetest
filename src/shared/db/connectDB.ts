@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,15 +12,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /* eslint-disable no-process-exit */
 
 import { connect, connection, pluralize } from 'mongoose';
-import type { ConnectionOptions } from 'mongoose';
-import JSON5 from 'json5';
-import type { Schema } from 'mongoose';
+import type { ConnectOptions } from 'mongoose';
 import { dbConfig } from '../config';
 import { logger } from '../logger';
 
@@ -28,13 +26,7 @@ import { logger } from '../logger';
 // https://github.com/mongodb/node-mongodb-native
 // https://docs.mongodb.com/manual/tutorial/configure-ssl-clients
 
-const { atlas, url, tls, tlsCertificateKeyFile, mockDB } = dbConfig;
-
-// bei "ESnext" statt "CommonJS": __dirname ist nicht vorhanden
-// import { dirname } from 'path';
-// import { fileURLToPath } from 'url';
-// const filename = fileURLToPath(import.meta.url);
-// const currentDir = dirname(filename);
+const { url } = dbConfig;
 
 // https://mongoosejs.com/docs/deprecations.html
 const useNewUrlParser = true;
@@ -49,37 +41,29 @@ const useCreateIndex = true;
 const useUnifiedTopology = true;
 
 // Name eines mongoose-Models = Name der Collection
-pluralize(undefined); // eslint-disable-line unicorn/no-useless-undefined
+// https://github.com/Automattic/mongoose/issues/5947#issuecomment-354381167
+// eslint-disable-next-line line-comment-position, spaced-comment, unicorn/no-useless-undefined
+pluralize(undefined); //NOSONAR
 
 // Callback: Start des Appservers, nachdem der DB-Server gestartet ist
 
 export const connectDB = async () => {
-    if (mockDB) {
-        logger.warn('Mocking: Keine DB-Verbindung');
-        return;
-    }
-
     logger.info(
-        `URL fuer mongoose: ${url
-            .replace(/\/\/.*:/u, '//USERNAME:@')
-            .replace(/:[^:]*@/u, ':***@')}`,
+        'URL fuer mongoose: %s',
+        url,
+        // url.replace(/\/\/.*:/u, '//USERNAME:@').replace(/:[^:]*@/u, ':***@'),
     );
 
     // Optionale Einstellungen, die nicht im Connection-String verwendbar sind
     // http://mongoosejs.com/docs/connections.html
     // http://mongodb.github.io/node-mongodb-native/3.5/api/MongoClient.html#.connect
     // https://mongodb.github.io/node-mongodb-native/3.5/reference/connecting/connection-settings
-    const options: ConnectionOptions = {
+    const options: ConnectOptions = {
         useNewUrlParser,
         useFindAndModify,
         useCreateIndex,
         useUnifiedTopology,
     };
-    if (!atlas && !tls) {
-        options.tls = true;
-        options.tlsCertificateKeyFile = tlsCertificateKeyFile;
-        options.tlsInsecure = true;
-    }
 
     // http://mongoosejs.com/docs/api.html#index_Mongoose-createConnection
     // http://mongoosejs.com/docs/api.html#connection_Connection-open
@@ -89,14 +73,15 @@ export const connectDB = async () => {
     try {
         await connect(url, options);
     } catch (err: any) {
-        logger.error(`${JSON5.stringify(err)}`);
+        logger.error('%o', err);
         logger.error(
-            `FEHLER beim Aufbau der DB-Verbindung: ${err.message as string}\n`,
+            'FEHLER beim Aufbau der DB-Verbindung: %s\n',
+            err.message as string,
         );
         process.exit(0); // eslint-disable-line node/no-process-exit
     }
 
-    logger.info(`DB-Verbindung zu ${connection.db.databaseName} ist aufgebaut`);
+    logger.info('DB-Verbindung zu %s ist aufgebaut', connection.name);
 
     // util.promisify(fn) funktioniert nur mit Funktionen, bei denen
     // der error-Callback das erste Funktionsargument ist
@@ -111,34 +96,5 @@ export const connectDB = async () => {
 
 // In Produktion auf false setzen
 export const autoIndex = true;
-
-export const optimistic = (schema: Schema) => {
-    // https://mongoosejs.com/docs/guide.html#versionKey
-    // https://github.com/Automattic/mongoose/issues/1265
-    schema.pre('findOneAndUpdate', function () {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-invalid-this
-        const update = this.getUpdate();
-        // eslint-disable-next-line no-null/no-null
-        if (update.__v !== null) {
-            delete update.__v;
-        }
-        const keys = ['$set', '$setOnInsert'];
-        for (const key of keys) {
-            // Optional Chaining
-            /* eslint-disable security/detect-object-injection */
-            // eslint-disable-next-line no-null/no-null
-            if (update[key]?.__v !== null) {
-                delete update[key].__v;
-                if (Object.entries(update[key]).length === 0) {
-                    delete update[key]; // eslint-disable-line @typescript-eslint/no-dynamic-delete
-                }
-            }
-            /* eslint-enable security/detect-object-injection */
-        }
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions, @typescript-eslint/no-unsafe-assignment
-        update.$inc = update.$inc || {};
-        update.$inc.__v = 1;
-    });
-};
 
 /* eslint-enable no-process-exit */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,7 +12,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Das Modul enthält die Funktion {@linkcode save} für _GridFS_.
+ * @packageDocumentation
  */
 
 import type {
@@ -21,22 +26,30 @@ import type {
     GridFSBucketWriteStream,
     MongoClient,
 } from 'mongodb';
-import type { Readable } from 'stream';
 import { closeMongoDBClient } from './mongoDB';
 import { logger } from '../../shared/logger';
 
+/**
+ * Eine Funktion, um Binärdaten aus einem ReadableStream in GridFS abzuspeichern
+ *
+ * @param readableStream ReadableStream von Node
+ * @param bucket Bucket für GridFS
+ * @param filename Dateiname der abzuspeichernden Binärdatei
+ * @param metadata Metadaten, z.B. MIME-Type, der abzuspeichernden Binärdatei
+ * @param client MongoClient für die DB-Verbindung
+ */
 /* eslint-disable max-params */
-export const saveReadable = (
-    readable: Readable,
+export const save = (
+    readableStream: NodeJS.ReadableStream,
     bucket: GridFSBucket,
     filename: string,
     metadata: GridFSBucketOpenUploadStreamOptions,
     client: MongoClient,
 ): GridFSBucketWriteStream =>
-    readable
+    readableStream
         .pipe(bucket.openUploadStream(filename, metadata))
         .on('finish', () => {
-            logger.debug('gridfs.saveReadable(): UploadStream ist beendet');
+            logger.debug('gridfs.save(): UploadStream ist beendet');
             closeMongoDBClient(client);
         });
 /* eslint-enable max-params */

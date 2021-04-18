@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,33 +12,47 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Das Modul besteht aus den Klassen {@linkcode NoTokenError} und
+ * {@linkcode UserInvalidError} für die Fehlerbehandlung mit try-catch.
+ * @packageDocumentation
  */
 
 /* eslint-disable max-classes-per-file */
 
-// Statt JWT (nahezu) komplett zu implementieren, koennte man z.B. Passport
-// verwenden
+// Statt JWT zu implementieren, koennte man z.B. Passport verwenden
 import { logger } from '../../shared';
 
-// http://stackoverflow.com/questions/1382107/whats-a-good-way-to-extend-error-in-javascript#answer-5251506
+// http://stackoverflow.com/questions/1382107/whats-a-good-way-to-extend-error-in-comedy#answer-5251506
 // https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Error
 
-export class AuthorizationInvalidError extends Error {
-    constructor(message: string) {
-        super(message);
-        logger.silly('AuthorizationInvalidError.constructor()');
-        this.name = 'AuthorizationInvalidError';
+/**
+ * Die Klasse `NoTokenError` implementiert den Fehler, wenn es beim Request
+ * keinen JSON Web Token gab.
+ */
+export class NoTokenError extends Error {
+    constructor() {
+        super('Es gibt keinen Token');
+        logger.silly('NoTokenError.constructor()');
+        this.name = 'NoTokenError';
         Object.setPrototypeOf(this, new.target.prototype);
         Error.captureStackTrace(this);
     }
 }
 
-export class TokenInvalidError extends Error {
+/**
+ * Die Klasse `UserInvalidError` implementiert den Fehler, dass es zwar beim
+ * Request einen JSON Web Token gab, dass es aber keinen zugehörigen
+ * {@linkcode User} gibt.
+ */
+export class UserInvalidError extends Error {
     constructor(message: string) {
         super(message);
-        logger.silly('TokenInvalidError.constructor()');
-        this.name = 'TokenInvalidError';
+        logger.silly('UserInvalidError.constructor()');
+        this.name = 'UserInvalidError';
         Object.setPrototypeOf(this, new.target.prototype);
         Error.captureStackTrace(this);
     }

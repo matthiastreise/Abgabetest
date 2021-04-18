@@ -1,30 +1,26 @@
-### Copyright (C) 2020 - present Alexander, Matthias, Glynis 
-###
-### This program is free software: you can redistribute it and/or modify
-### it under the terms of the GNU General Public License as published by
-### the Free Software Foundation, either version 3 of the License, or
-### (at your option) any later version.
-###
-### This program is distributed in the hope that it will be useful,
-### but WITHOUT ANY WARRANTY; without even the implied warranty of
-### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-### GNU General Public License for more details.
-###
-### You should have received a copy of the GNU General Public License
-### along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-###
-### N e t z w e r k   -  V e r b i n d u n g   n o t w e n d i g
-###
-
-@url = https://localhost:3000/graphql
-#@url = https://gener-iert-12345.herokuapp.com/graphql
-
-# Introspection beim Apollo Server: Metadaten ueber die verfuegbaren Typen
-# https://graphql.org/learn/introspection
+//
+// N e t z w e r k   -  V e r b i n d u n g   n o t w e n d i g
+//
+// Introspection beim Apollo Server: Metadaten ueber die verfuegbaren Typen
+// https://graphql.org/learn/introspection
 
 ### Welche Typen sind verfuegbar?
-POST {{url}}
+POST {{graphQlUrl}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
@@ -36,13 +32,13 @@ X-REQUEST-TYPE: GraphQL
   }
 }
 
-### Details zum Typ "Song": Felder und deren Typen
-POST {{url}}
+### Details zum Typ "Film": Felder und deren Typen
+POST {{graphQlUrl}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
 {
-  __type(name: "Song") {
+  __type(name: "Film") {
     name
     kind
     description
@@ -61,13 +57,13 @@ X-REQUEST-TYPE: GraphQL
   }
 }
 
-### Details zum Enum-Typ "Interpret"
-POST {{url}}
+### Details zum Enum-Typ "Art"
+POST {{graphQlUrl}}
 Content-Type: application/json
 X-REQUEST-TYPE: GraphQL
 
 {
-  __type(name: "Interpret") {
+  __type(name: "Art") {
     name
     kind
     description

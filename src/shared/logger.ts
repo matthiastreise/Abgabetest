@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,35 +12,41 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { consoleOptions, fileOptions, serverConfig } from './config';
+/**
+ * Das Modul enthält das Logger-Objekt von _Winston_.
+ * @packageDocumentation
+ */
+
+import { cloud, consoleOptions, fileOptions } from './config';
 import { createLogger, transports } from 'winston';
-import JSON5 from 'json5';
+import type TransportStream from 'winston-transport';
 
 // Winston: seit 2010 bei GoDaddy (Registrierung von Domains)
 // Log-Levels: error, warn, info, debug, verbose, silly, ...
 // Medien (= Transports): Console, File, ...
 // https://github.com/winstonjs/winston/blob/master/docs/transports.md
-// Alternative: Bunyan, Pino
+// Alternativen: log4js (mit .d.ts), Pino, Bunyan
 
-const { cloud } = serverConfig;
 const { Console, File } = transports; // eslint-disable-line @typescript-eslint/naming-convention
-/* eslint-disable object-curly-newline */
-export const logger =
+
+const consoleInstance = new Console(consoleOptions);
+const transportStream: TransportStream | TransportStream[] =
     cloud === undefined
-        ? createLogger({
-              transports: [new Console(consoleOptions), new File(fileOptions)],
-          })
-        : createLogger({
-              transports: new Console(consoleOptions),
-          });
-/* eslint-enable object-curly-newline */
+        ? [consoleInstance, new File(fileOptions)]
+        : consoleInstance;
 
-logger.info('Logging durch Winston ist konfiguriert');
-logger.debug(`consoleOptions: ${JSON5.stringify(consoleOptions)}`);
+/**
+ * Das Logger-Objekt von Winston, um in der Konsole und/oder in eine Datei
+ * zu protokollieren.
+ */
+export const logger = createLogger({ transports: transportStream });
+Object.freeze(logger);
 
+logger.debug('consoleOptions: %o', consoleOptions);
 if (cloud === undefined) {
-    logger.debug(`fileOptions: ${JSON5.stringify(fileOptions)}`);
+    logger.debug('fileOptions: %o', fileOptions);
 }
+logger.info('Logging durch Winston ist konfiguriert');

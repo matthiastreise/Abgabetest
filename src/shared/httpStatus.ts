@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,10 +12,20 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Das Modul enthält den Enum-Typ {@linkcode HttpStatus} für die gängigen
+ * HTTP-Statuscodes.
+ * @packageDocumentation
  */
 
 /* eslint-disable @typescript-eslint/no-magic-numbers */
+
+/**
+ * Enum mit den gängigen Statuscodes beim HTTP-Protokoll
+ */
 export enum HttpStatus {
     OK = 200,
     CREATED = 201,
@@ -31,4 +41,5 @@ export enum HttpStatus {
     INTERNAL_ERROR = 500,
     NOT_YET_IMPLEMENTED = 501,
 }
+
 /* eslint-enable @typescript-eslint/no-magic-numbers */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,13 +12,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Das Modul enthält allgemeine Objekte, Funktionen und Typen für den
+ * Appserver, z.B. für den DB-Zugriff oder für die Konfiguration.
+ * @packageDocumentation
  */
 
 export * from './base-uri';
 export * from './config';
 export * from './db';
-export * from './functions';
 export * from './httpStatus';
 export * from './logger';
 export * from './request-handler';

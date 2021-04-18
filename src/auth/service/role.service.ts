@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,22 +12,38 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import JSON5 from 'json5';
+/**
+ * Das Modul besteht aus der Klasse {@linkcode RoleService} für die
+ * Autorisierung (RBAC = role based access control).
+ * @packageDocumentation
+ */
+
 import { logger } from '../../shared';
 import { roles } from './roles';
 
 export class RoleService {
     constructor() {
-        logger.info(`RoleService: roles=${JSON5.stringify(roles)}`);
+        logger.info('RoleService: roles=%o', roles);
     }
 
+    /**
+     * Alle Rollen werden ermittelt.
+     *
+     * @returns Alle Rollen.
+     */
     findAllRoles() {
         return roles;
     }
 
+    /**
+     * Alle Rollen werden ermittelt.
+     *
+     * @param rollen als ein JSON-Array mit Elementen vom Typ string oder undefined
+     * @returns Array mit den kleingeschriebenen Rollen und ohne undefined.
+     */
     getNormalizedRoles(rollen: readonly (string | undefined)[]) {
         if (rollen.length === 0) {
             logger.debug('RolesService.getNormalizedRoles(): []');
@@ -37,11 +53,7 @@ export class RoleService {
         const normalizedRoles = rollen.filter(
             (r) => this.getNormalizedRole(r) !== undefined,
         ) as string[];
-        logger.debug(
-            `RolesService.getNormalizedRoles(): ${JSON5.stringify(
-                normalizedRoles,
-            )}`,
-        );
+        logger.debug('RolesService.getNormalizedRoles(): %o', normalizedRoles);
         return normalizedRoles;
     }
 
@@ -50,7 +62,7 @@ export class RoleService {
             return;
         }
 
-        // Falls der Rollenname in Grossbuchstaben geschrieben ist, wird er
+        // Falls der Rollenname in Grossfilmstaben geschrieben ist, wird er
         // trotzdem gefunden
         return this.findAllRoles().find(
             (r) => r.toLowerCase() === role.toLowerCase(),

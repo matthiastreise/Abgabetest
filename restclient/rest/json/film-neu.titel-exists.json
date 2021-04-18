@@ -1,0 +1,19 @@
+{
+  "titel": "Alpha",
+  "rating": 1,
+  "art": "VHS",
+  "studio": "UniversalPictures",
+  "preis": 99.9,
+  "rabatt": 0.1,
+  "lieferbar": true,
+  "datum": "2020-02-01",
+  "isan": "0-0070-0644-6",
+  "regisseur": "Stanley Kubrick",
+  "genre": ["Horror", "Action"],
+  "darsteller": [
+    {
+      "vorname": "Theo",
+      "nachname": "Test"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 - present Alexander, Matthias, Glynis
+ * Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,15 +12,27 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Cloud, serverConfig } from './config';
+/**
+ * Das Modul enthält die Funktion, um die Basis-URI für die REST-Schnittstelle
+ * zu liefern.
+ * @packageDocumentation
+ */
+
+import { Cloud, cloud, nodeConfig } from './config';
 import type { Request } from 'express';
 
-const { cloud } = serverConfig;
-const port = cloud === undefined ? `:${serverConfig.port}` : '';
+const port = cloud === undefined ? `:${nodeConfig.port}` : '';
 
+/**
+ * die Funktion, um die Basis-URI für die REST--Schnittstelle zu liefern, z.B.
+ * für Atom-Links bei HATEOAS oder für den Location-Header.
+ *
+ * @param req Request-Objekt von Express
+ * @returns Die Basis-URI als `string`
+ */
 export const getBaseUri = (req: Request) => {
     const { protocol, hostname, baseUrl } = req;
     const schema = cloud === Cloud.HEROKU ? 'https' : protocol;

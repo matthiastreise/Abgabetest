@@ -1,0 +1,72 @@
+// Copyright (C) 2021 - present Alexander Mader, Marius Gulden, Matthias Treise
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+//
+// N e t z w e r k   -  V e r b i n d u n g   n o t w e n d i g
+//
+
+### Suche id, titel, art und version von allen Filmen
+POST {{graphQlUrl}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+{
+  filme {
+    id
+    titel
+    art
+    version
+  }
+}
+
+### Suche titel, art, isan und version von einem Film mit vorhandener Film-ID
+POST {{graphQlUrl}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+{
+  film(id: "00000000-0000-0000-0000-000000000001") {
+    titel
+    art
+    isan
+    version
+  }
+}
+
+### Suche titel und art von Filmen mit vorhandenem Titel
+POST {{graphQlUrl}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+{
+  filme(titel: "Alpha") {
+    titel
+    art
+  }
+}
+
+
+### Suche titel, art und genre von Filmen mit vorhandenem Titel
+POST {{graphQlUrl}}
+Content-Type: application/json
+X-REQUEST-TYPE: GraphQL
+
+{
+  filme(titel: "a") {
+    titel
+    art
+    genre
+  }
+}
